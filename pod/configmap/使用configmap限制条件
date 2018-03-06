@@ -1,0 +1,8 @@
+使用configmap 的限制条件如下
+* configmap 必须在之前创建
+* configmap 受namespace限制，只有处于相同namespace中的pod可以引用它
+* configmap 中的配额管理还未实现
+* kubelet  只支持可以被API server 管理的pod 使用configmap kubelet 在本node 上通过 --manifest-url 或 --config 自动创建静态pod 将无法引用configmap
+在pod对configmap进行挂载操作时，容器内部只能挂载为“目录”，无法挂载为文件。在挂载到容器内部后，目录中将包含configmap定义的每个item，如果该目录下原来还有其
+其他文件，则容器内的该目录将会被挂载的configmap覆盖。如果应用程序需要保留原来的其他文件，则需要额外处理。可以将configmap 挂载到容器内部的临时目录，再通
+过启动脚本将配置文件复制或者链接到（cp 或link 命令应用所用的实际配置目录下）
