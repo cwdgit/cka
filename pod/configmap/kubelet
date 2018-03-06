@@ -1,0 +1,11 @@
+ 使用命令创建：
+（1）通过--from-file参数从文件中进行创建，可以指定key的名称，也可以在一个命令行中创建包含多个key的config,语法为：
+ #  kubectl create configmap NAME --from-file=[key=]source --from-file=[key=]source
+ #  kubectl create configmap cm-server.xml --from-file=server.xml
+（2）通过--from-file参数从目录中进行创建，该目录下的每个配置文件名都被设置为key，文件的内容被设置为value, 语法为：
+ #  kubectl create configmap NAME --from-file=config-files-dir
+ #  kubectl create configmap cm-appconf --from-file=configfiles
+（3）--from-literal从文本中进行创建，直接将指定的#=value#创建为config的内容，语法为：
+ #  kubectl create configmap NAME --from-literal=key1=value1 --from-literal=key2=value2
+ #  kubectl create configmap cm-appenv --from-literal=loglevel=info --from-literal=appdatadir=/var/data
+ 
