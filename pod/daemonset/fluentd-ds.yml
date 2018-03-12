@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Daemonset
+metadata:
+  name: fluentd-cloud-logging
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-cloud-logging
+spec:
+template:
+  metadata:
+    namespace: kube-system
+    labels:
+      k8s-app: fluentd-cloud-logging
+  spec:
+    containers:
+    - name: fluentd-cloud-logging
+
