@@ -1,0 +1,7 @@
+1. kubectl set image
+kubectl set image deployment/nginx-deployment nginx=nginx=1.9.1
+
+2. kubectl edit 
+kubectl edit deployment/nginx-deployment 
+
+3.创建时deployment时，加入--record参数，就可以在change-cause列看到每个版本使用的命令。
