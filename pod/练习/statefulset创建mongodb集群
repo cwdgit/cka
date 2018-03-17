@@ -1,0 +1,1 @@
+以mongodb为例，使用statefulset完成mongodb集群的创建，为每个mongodb实例在共享存储中（采用glusterfs）申请一片存储空间，以实现一个无单点故障、高可用、可动态扩展的mongodb集群

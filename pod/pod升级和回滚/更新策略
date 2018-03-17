@@ -1,0 +1,12 @@
+从1.6版本开始，对daemonset和statefulset的更新策略类似于deployment的滚动升级，通过不同的策略，自动完成应用的版本升级
+
+1)daemonset的更新策略
+目前daemonset的升级策略包括两种：ondelete和rollingupdate
+
+ondelete: daemonset的默认升级策略，与1.5及以前的版本的k8s保持一致。当使用ondelete作为升级策略时，在创建好新的daemonset之后，新的pod并不会自动创建，直到用户手动删除旧版本pod,才触发新建操作
+rollingupdate: 从1.6版本开始引入。当使用rollingupdate作为升级策略对daemonset进行更新时，旧版本的pod将被自动杀掉，然后自动创建新版本的daemonset pod。整个过程与普通的deployment滚动升级一样是可控的。不过有两点不同于普通的pod的滚动升级：
+一是目前kubernetes还不支持查看和管理daemonset的更新记录，二是daemonset的回滚并不能如同deployment一样直接通过rollback命令来实现，而是必须通过再次提交旧版本配置实现。
+
+
+2)statefulset
+从1.6之后也向deployment和daemonset看齐，也将实现rollingupdate,paritioned和ondelete几种策略，目标是保证statefulset中各pod有序地，逐个的更新，并且能够保留更新历史，也能回滚到某个历史版本。

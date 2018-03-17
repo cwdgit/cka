@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ReplicationController
+metadata: 
+  name: redis-master-v3
+  labels: 
+   name: redis-master
+   version: v3
+spec:
+  replicas: 3
+  selector:
+    name: redis-master
+    version: v3
+  template:
+    metadata:
+      labels:
+        name: redis-master
+        version: v3
+    spec:
+      containers:
+      - name: master
+        image: redis
+        ports:
+        - containerPort: 6379

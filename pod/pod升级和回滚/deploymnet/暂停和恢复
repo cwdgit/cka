@@ -1,0 +1,10 @@
+对于一次复杂的deployment配置修改，为了避免频繁触发deployment的更新操作，可以先暂停deployment的更新操作，然后进行配置修改，再恢复deployment,一次性触发完整的更新操作，就可以避免不必要的deployment更新操作。
+example:
+1.通过kubectl rollout pause 命令暂停deploymnet的更新操作
+kubectl rollout pause deployment/nginx-deploymnet-update
+2.然后修改deployment的镜像信息
+kubectl set image deploymnet/nginx-deployment-update nginx=nginx:1.9.1
+kubectl set resources deployment/nginx-deployment-update -c=nginx --limits=cpu=200m,memory=512Mi
+3.最后，恢复这个deployment的部署操作
+kubectl rollout resume deploymnet/nginx-deployment-update
+

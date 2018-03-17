@@ -1,0 +1,5 @@
+1.通过kubectl scale 命令可以将pod的副本数量从初始的3更新为5
+kubectl scale deployment nginx-deployment-ks --replicas 5
+将--replicas 设置为比当前pod副本数量更小的数字，系统将会杀掉一些运行的pod,以实现应用集群的缩容。
+2.自动扩容和缩容的模式
+hpa(horizontal pod autoscaler)的控制器，用于实现基于cpu使用率进行自动pod扩容和缩容的功能

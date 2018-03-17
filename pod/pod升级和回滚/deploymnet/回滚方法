@@ -1,0 +1,6 @@
+1.用 kubectl rollouot history 命令检查这个deployment部署的历史记录
+kubectl rollout history deployment/nginx-deployment-update
+2.撤销本次发布并回滚到上一个部署版本
+kubectl rollout undo deploymnet/nginx-deployment-update
+当然，也可以使用--to-revision 参数指定回滚到部署版本号
+kubectl rollout undo deployment/nginx-deployment --to-revision=2

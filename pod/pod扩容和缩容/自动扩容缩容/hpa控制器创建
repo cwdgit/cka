@@ -1,0 +1,24 @@
+1.为deployment ”php-apache“创建一个hpa控制器，在1和10之间调整pod的副本数量，以使得平均pod cpu使用率维持在50%
+
+#kubectl autoscale  deployment php-apache --min=1 --max=10 --cpu-percent=50
+
+2.通过yaml文件来创建hpa,
+
+hpa-php-apache.yaml
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-apache
+spec: 
+  scaleTargetRef:
+    apiVersion: apps/v1beta1
+    kind: Deployment
+    name: php-apache
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+
+
+# kubectl create -f hpa-php-apache.yaml
+

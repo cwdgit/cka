@@ -1,0 +1,3 @@
+1.RC的名字（name）不能与旧的RC的名字相同
+2.在selector中应至少有一个label与旧的RC的label不同，以标识其为新的RC。
+
