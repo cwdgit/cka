@@ -1,0 +1,1 @@
+在某些应用场景中，开发人员希望自己控制负载均衡的策略，不使用service提供的默认负载均衡的功能，或者应用程序希望知道属于同组服务的其他实例。kubernetes提供了headless service（无头服务）来实现这种功能,即不为service设置clusterIP（入口ip地址），仅通过label selector将后端的pod列表返回给调用的客户端。
