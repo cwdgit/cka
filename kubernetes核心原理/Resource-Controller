@@ -1,0 +1,16 @@
+resourcequato controller(资源配额管理)
+目前kubernetes支持如下三层的资源配额管理
+1.容器级别，可以对cpu和memory进行限制
+2.pod级别，可以对一个pod内所有容器的可用资源进行限制
+3.namespace级别，为namespace(多租户)级别的资源限制，
+包括：
+pod数量
+replication Controller数量
+service数量
+resourcequota数量
+secret数量
+可持有的pv数量
+
+kubernetes的配额管理通过admission control准入控制来控制，
+admission control提供了两种方式的配额约束，分别是limitranger和resourcequota
+其中limitranger作用于pod和controller上，而resourcequota作用于namespace上

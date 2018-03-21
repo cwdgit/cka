@@ -1,0 +1,3 @@
+controller manager作为集群内部的管理控制中心
+负责集群内的node、pod副本、服务端点（endpoint）、命名空间（namespace）、服务账号（servicecount）、资源定额（resourcequota）等的管理，当某个node宕机了，controller manager会及时发现此故障并执行自动化修复流程，确保集群始终处于预期的工作状态。
+

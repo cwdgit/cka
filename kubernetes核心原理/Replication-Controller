@@ -1,0 +1,8 @@
+Replication Controller(副本数)
+(1)确保当前集群中有且仅有N个pod实例，N是RC中定义的pod副本数量
+(2)通过调整RC中的spec.replicas属性值来实现系统扩容或者缩容
+(3)通过改变RC中的pod模板(主要是镜像模板)来实现系统的滚动升级
+使用场景
+(1)重新调度(Rescheduling)
+(2)弹性伸缩(scaling)
+(3)滚动更新(rolling update)

@@ -1,0 +1,20 @@
+kubernetes api server原理分析
+总体来看，kubernetes api server 的核心功能是提供了kubernetes各类资源对象（如pod，RC，Service等）的增、删、改、差及watch等HTTP Rest接口，成为集群内各个功能模块之间数据交互和通信的中心枢纽，是整个系统的数据总线和数据中心。除此之外，他还有以下一些功能。
+(1)是集群管理的api入口
+(2)是资源配额控制的入口
+(3)提供了完备的集群安全机制
+
+独特的kubernetes proxy API 接口
+kubernetes proxy api接口作用是代理rest请求，即kubernetes api server 把收到的rest请求转发到某个node上的kubelet守护进程的rest端口上，由该kubelet进程负责响应
+
+集群功能模块之间通信
+kubernetes api server 作为集群的核心，负责集群各功能之间的通信。集群内的各个功能模块通过api server 将信息存入etcd，当需要获取和操作这些数据时，通过API server提供的rest接口来实现，从而实现各模块之间的信息互补。
+
+
+常用场景：
+1.kubelet进程与API server的交互
+2.kube-controller-manager 进程与API server的交互。 kube-controller-manager中的node controller模块通过API server提供的watch接口，实时监控node的信息，并做相应处理
+3.kube-scheduler与api server的交互。当scheduler通过API server的watch接口监听到新建pod副本的信息后，他会检索所有符合该pod要求的node列表，开始执行pod调度逻辑，调度成功后将pod绑定到目标节点上。
+功能模块在某些情况下不直接访问API server，而是通过访问缓存数据来间接访问API server。
+
+
