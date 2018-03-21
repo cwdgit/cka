@@ -3,8 +3,10 @@ kind: Service
 metadata:
   name: webapp
 spec:
+  type: NodePort
   ports:
   - port: 8080
     targetPort: 8080
+    nodePort: 30001
   selector:
     app: webapp
