@@ -1,0 +1,3 @@
+在每个节点上都会启动一个kubelet服务进程。该进程用于处理master节点下发到本节点的任务，管理pod及pod中的容器。每个kubelet进程会在apiserver上注册自己的自身信息。定期向master节点汇报节点的资源使用情况，并通过cadvisor监控容器和节点资源。
+
+节点管理

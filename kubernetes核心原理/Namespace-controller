@@ -1,0 +1,2 @@
+通过api server可以创建新的namespace并保存在etcd中，namespace controller定时通过api server读取这些namespace信息。如果namespace被API标识为删除，并保存到etcd中。同时namespace controller删除该namespace下的serviceaccount、rc、pod、secret、persistentVolume、listrange、resourcequota和event等资源对象。
+

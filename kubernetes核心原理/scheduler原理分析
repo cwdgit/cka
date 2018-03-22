@@ -1,0 +1,34 @@
+kubernetes scheduler在整个系统中承担了“承上启下”的重要功能，“承上”是指负责接受controller manager创建新的pod，为其安排一个落脚的家--目标node;"启下"是指安置工作完成后，目标node上的kubelet服务进程接管后继工作，负责pod生命周期中的“下半生”。
+
+作用是将待调度的pod按照特定的调度算法和调度策略绑定到集群中某个合适的node上，并将信息写入到etcd中。在整个调度过程中涉及三个对象分别是：待调度pod列表、可用node列表，以及调度算法和策略。就是通过调度算法调度为待调度pod列表的每个pod从node列表中选择一个最合适的node。
+
+随后目标节点上的kubelet通过API server监听到kubernetes scheduler产生的pod绑定事件，然后获取对应的pod清单，下载image镜像，并启动容器。
+
+
+kubernetes scheduler当前提供的默认调度流程分为以下两步
+(1)预选调度过程，即遍历所有目标node，筛选出符合要求的候选节点。为此，kubernetes内置了多种预选策略供用户选择
+(2)确定最优节点，在第一步的基础上，采用优选策略计算出每个候选节点的积分，积分最高者胜出
+
+1.nodiskconflict
+2.podfirstresources
+3.podselectormatches
+4.podfirsthost
+5.checknodelabelpresence
+6.checkserviceaffinity
+7.podfitsports
+
+scheduler中的优选策略包含：leastrequestedpriority、calculatenodelabelpriority和balancedresourceallocation等。每个节点通过优先选择策略时都会计算出一个得分，计算各项得分，最终选出得分值最大的节点作为优先的结果。
+
+
+1.leastrequestedpriority
+该优选策略用于从备选节点列表中选择资源消耗最小的点
+计算出所有备选节点上运行的pod和备选pod的cpu占用量totalmillicpu
+计算出所有备选节点上运行的pod和备选pod的内存占用量totalmemory
+计算每个节点的得分，
+2.calculatenodelabelpriority
+
+3.balancedresourceallocation
+该优选策略用于从备选节点列表中选出各项资源使用率最均衡的节点
+计算出所有备选节点上运行的pod和备选pod的cpu占用量totalmillicpu
+计算出所有备选节点上运行的pod和备选pod的内存占用量totalmemory
+计算每个节点的得分

@@ -1,0 +1,5 @@
+endpoints表示一个service对应的所有pod副本的访问地址，而endpoints controller就是负责生成和维护所有endpoints对象的控制器。
+它负责监听service和对应的pod副本的变化，如果监测到service被删除，则删除和该service同名的endpoint对象。如果监测到新的service被创建或者修改，则根据该service信息获得相关的pod列表，然后创建或者更新service对应的endpoints对象。如果监测到pod的事件，则更新它所对应的service的endpoint对象（增加、删除或者修改对应的endpoint条目）
+
+
+
