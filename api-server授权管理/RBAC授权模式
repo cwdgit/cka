@@ -1,0 +1,13 @@
+RBAC基于角色的访问控制在kubernetes1.5中引入，在v1.6版本时升级为beta版本，并成为kubeadm安装方式下的默认选项，足见其重要程度。相对于其他的访问控制方式，新的rbac具有如下的优势。
+1.对集群中的资源和非资源权限均有完整的覆盖
+2.整个rbac完全由几个API对象完成，同其他的API对象一样，可以用kubectl或API进行操作
+3.可以在运行时调整，无须重新启动API server
+
+要使用rbac授权模式，则需要在API server的启动参数中加上--authentication-mode=RBAC
+
+1.RBAC的API资源对象说明
+RBAC引入了4个新的顶级资源对象：Role、ClusterRole、RoleBinding、ClusterRoleBinding
+
+角色(Role)
+一个角色就是一组权限的集合，这里的权限都是许可形式的，不存在拒绝的规则。在一个命名空间中，可以用角色来定义一个角色，如果是集群级别的，就需要使用clusterrole了。
+角色只能对命名空间内的资源进行授权，下面

@@ -1,3 +1,30 @@
 在每个节点上都会启动一个kubelet服务进程。该进程用于处理master节点下发到本节点的任务，管理pod及pod中的容器。每个kubelet进程会在apiserver上注册自己的自身信息。定期向master节点汇报节点的资源使用情况，并通过cadvisor监控容器和节点资源。
 
 节点管理
+kubelet 在启动时通过api server 注册节点信息，并定时向API server发送节点的新消息，API server 在接收到这些信息后，将这些信息写入etcd。通过kubelet的启动参数 --node-status-update-frequency 设置kubelet每隔多长时间向API server报告节点状态。默认为10s
+
+pod 管理
+kubelet 通过以下几种方式获取自身node上所要运行的pod清单
+(1)文件：kubelet启动参数 “--config”指定的配置文件目录下的文件
+(2)HTTP端点：
+(3)API server:kubelet 通过API server监听etcd目录，同步pod列表
+
+kubelet监听etcd，所有针对pod的操作将会被kubelet监听到，如果发现有新的绑定到本节点的pod，则按照pod清单要求创建该pod
+如果发现本地pod被修改，则kubelet会做出相应的修改，比如删除pod中的某个容器时，则通过docker client删除该容器。
+kubelet 读取监听到的信息，如果是创建和修改pod任务，则做如下处理
+1.为该pod创建一个数据目录
+2.从API server读取该pod清单
+3.为该pod挂载外部卷
+4.下载pod用到的secret
+5.检查已经运行在节点中的pod，如果该pod没有容器或pause容器没有启动，则先停止pod里面所有的容器进程。如果在pod中有需要删除的容器，则删除这些容器
+
+6.用pause镜像为每个pod创建一个容器。该pause容器用于接管pod中所有其他容器的网络。每创建一个新的pod，kubelet都会创建一个pause容器，然后创建其他所有容器。
+7.为pod中每个容器做如下处理
+
+为容器计算一个hash值，然后用容器的名字去查询对应的docker容器的hash值，若查找到容器，且两者hash值不同，则停止docker中容器的进程，并停止与之关联的pause容器的进程，若两者相同，则不做任何处理。
+
+
+如果容器被终止了，且容器没有指定的restartpolicy，则不做任何处理
+调用docker client下载镜像，调用docker client 运行容器
+
+

@@ -1,0 +1,28 @@
+pod 通过两类探针来查看容器的健康状态，
+一个是livenessprobe探针，用于判断容器是否健康，告诉kubelet一个容器什么时候处于不健康的状态。如果livenessprobe探针探测到容器不健康，告诉kubelet将删除该容器，并根据容器的重启策略做相应的处理。如果一个容器不包含livenessprobe探针，那么kubelet认为该容器的livenessprobe探针返回的值永远是success；
+另一个是readinessprobe探针检测到失败，用于判断容器是否启动完成，且准备接收请求。如果readinessprobe探针检测到失败，则pod的状态被更改，endpoint controller将从service的endpoint中删除包含该容器所在的pod的ip地址的endpoint条目
+
+kubelet定期调用容器中的livenessprobe探针来诊断容器的健康状况。livenessprobe包含一下三种实现方式
+
+1.execaction:在容器内部执行一个命令，如果该命令的退出码为0，则表明健康
+2.tcpsocketaction: 通过容器的IP地址和端口号执行tcp检查，如果端口能被访问，则表明健康
+3.httpgetaction: 通过容器的ip地址和端口号及路径调用http get方法，如果响应的状态码大于200且小于400，则认为容器状态健康
+
+livenessprobe探针包含在pod定义的spec.containers.{某个容器}中。下面的例子展示了两种pod中容器健康检查的方式：HTTP检查和容器命令执行检查。下面所列的内容实现了通过容器命令执行检查。
+livenessprobe:
+  exec:
+   command:
+   - cat
+   - /tmp/health
+  initialDelaySecones: 15
+  timeoutSeconds: 1
+kubelet在容器中执行 “cat /tmp/health” 命令，如果该命令返回的值为0，则表明容器处于健康状态，否则表明容器处于不健康状态。
+
+下面所列的内容实现了容器的http检查：
+livenessprobe
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySecones: 15
+  timeoutSeconds: 1
+kubelet发送一个http请求到本地主机和端口及指定的路径，来检查容器的健康状况。
