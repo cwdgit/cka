@@ -10,4 +10,37 @@ RBAC引入了4个新的顶级资源对象：Role、ClusterRole、RoleBinding、C
 
 角色(Role)
 一个角色就是一组权限的集合，这里的权限都是许可形式的，不存在拒绝的规则。在一个命名空间中，可以用角色来定义一个角色，如果是集群级别的，就需要使用clusterrole了。
-角色只能对命名空间内的资源进行授权，下面
+角色只能对命名空间内的资源进行授权，下面下面例子中定义的角色具备读取pod的权限
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namesapce: default
+  name: pod-reader
+rules:
+  - apiGroups: [""] #" "空字符串，表示核心API群
+  resources: ["pods"]
+  verbs: ["get","watch","list"]
+
+rules中的参数说明如下。
+apiGroups: 支持的API组列表，例如“apiVersion: batch/v1” "apiVersion: extensions:v1beta1" "apiVersion: app/v1beta1"等。
+resource：支持的资源列表，例如pods、deployments、jobs等
+verbs: 对资源对象的操作方法列表，例如get、watch、list、delete、replace、patch等。
+
+集群角色(clusterrole)
+集群角色除了具有和角色一致的命名空间内资源的管理能力，因其集群级别的范围，还可以用于以下特殊元素的授权。
+1.集群范围内的资源，例如node节点
+2.非资源型的路径，例如/healthz
+3.包含全部命名空间的资源，例如pods
+
+kind: clusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata
+  #clusterRole 不受限于命名空间，所以省略了namespace name的定义
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get","watch","list"]
+
+角色绑定(rolebinding)和集群角色绑定(clusterrolebinding)
+角色绑定或集群角色绑定用来把一个角色绑定到一个目标上，绑定目标可以是user(用户)、group(组)、或者service account。使用rolebinding为某个命名空间授权，使用clusterrolebind为集群范围内授权。
