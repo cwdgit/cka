@@ -44,3 +44,118 @@ rules:
 
 角色绑定(rolebinding)和集群角色绑定(clusterrolebinding)
 角色绑定或集群角色绑定用来把一个角色绑定到一个目标上，绑定目标可以是user(用户)、group(组)、或者service account。使用rolebinding为某个命名空间授权，使用clusterrolebind为集群范围内授权。
+
+RoleBinding可以引入Role进行授权，下例中rolebinding 将在default命名空间中把pod-reader角色授予用户Jane，这一操作让Jane可以读取default命名空间的pod:
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: read-pods
+  namespaces: default
+subjects:
+  - kind: User
+    name: jane
+    apiGroup: rbac.authorization.k8s.io
+  roleRef:
+    kind: Role
+    name: pod-reader
+    apiGroup: rbac.authorization.k8s.io
+
+RoleBinding也可以引用ClusterRole,对属于同一命名空间内ClusterRole定义的资源主体进行授权。
+一种常见的做法是集群管理员为集群预先定义好一组角色，然后在多个命名空间中重复使用这些clusterrole
+
+例如：
+secret-reader是一个集群角色，但是因为使用了rolebinding，所以Dave只能读取development 命名空间的secret
+  
+
+  kind: RoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1beta1
+  metadata:
+    name: read-secrets
+    namespace: development
+  subjects: 
+  - kind: User
+    name: dave
+    apiGroup:rbac.authorization.k8s.io
+  roleRef:
+    kind: ClusterRole
+    name: secret-reader
+    apiGroup:rbac.authorization.k8s.io
+    name: dave
+    apiGroup: rbac.authorization.k8s.io
+  roleRef:
+    kind: User
+   
+3.常用的角色role示例
+允许读取核心API组中的pod资源
+rules:
+- apiGroup: [""]
+  resource: ["pods"]
+  verbs: ["get","list","watch"]
+
+允许读写“extensions”和“apps”两个API组中的“deployment”的资源
+
+rules：
+- apiGroups: ["extensions","apps"]
+  resource: ["deployments"]
+  verbs: ["get","list","watch","create","update","patch","delete"]
+
+允许读取“pods”及读写jobs:
+rules:
+- apiGroups: [""]
+  resource: ["pods"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resource: ["jobs"]
+  verbs: ["get","list","watch","create","update","patch","delete"]
+
+允许读取一个名为“my-config”的configmap（必须绑定到一个rolebinding）来限制到一个namespace的configmap
+rules:
+- apiGroups: [""]
+  resource: ["configmaps"]
+  resourceNames: ["my-config"]
+  verbs: ["get"]
+
+读取核心组的node资源(node属于集群级的资源，所以必须存在于clusterrole中)，并使用clusterrolebinding进行确定）
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get","list","watch"]
+
+允许对非资源端点“/healthz”及其所有子路径进行“get“和”post“操作（必须使用clusterrole）和clusterrolebinding：
+rules:
+- nonResourceURLs: ["/healthz","/healthz/*"]
+  verbs: ["get","post"]
+
+
+4.常用的角色绑定示例
+注意，下面的例子中只包含subject部分的内容。
+1.用户名“Alice@example.com”
+subjects:
+- kind: User
+  name: "alice@example.com"
+  apiGrpup: rbac.authorization.k8s.io
+2.组名frontend-admins
+subjects:
+- kind: Group
+  name: "frontend-admins"
+  apiGroup: rbac.authorization.k8s.io
+3.kube-system命名空间中默认的service account
+subjects:
+- kind: serviceaccount
+  name: default
+  namespace: kube-system
+4.qa命名空间中所有的service account
+subjects: 
+- kind: Group
+  name: system.serviceaccounts:qa
+  apiGroup: rbac.authorization.k8s.io
+5.所有service account
+subjects:
+- kind: Group
+  name: system: serviceaccounts
+  apiGroup: rbac.authorization.k8s.io
+
+
+
+

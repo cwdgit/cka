@@ -1,0 +1,30 @@
+apiserver认证
+rbac鉴权
+admissioncontrol准入控制
+
+admission control配备有一个“准入控制器”的插件列表，发送给API server的任何请求都需要通过列表中每个准入控制器检查，检查不通过，则API server拒绝此调用请求。此外，准入控制器插件还能修改参数以完成一些自动化的任务，比如serviceaccount这个控制器插件。当前可配置的准入控制器插件如下。
+1.alwaysadmit 允许所有请求
+2.alwayspullmages 在启动容器之前总是尝试重新下载镜像。这对于多住户共享一个集群的场景非常有用，系统在启动容器之前可以保证总是使用租户的秘钥去下载。如果不设置这个控制器，则在node上下载的镜像安全性将被削弱，只要知道该镜像的名称，任何人都可以使用它。
+3.alwaysdeny 禁止所有请求，用于测试
+
+
+
+
+每个namespace下有一个名为default的默认的service account对象，这个service account里面有一个名为tokens的可以当做volume一样被mount到pod的secret，当pod启动时，这个secret会自动被mount到pod的指定目录下，用来协助完成pod的进程访问API service时的身份鉴权过程。
+
+
+
+1.名为tokens的secret用于访问api server的secret，也被称为service account secret。
+2.名为image pull secrets的secret用于下载容器镜像时的认证过程，通常镜像库运行在insecure模式下，所以这个secret为空
+3.用户自定义的其他secret，对于用户的进程。
+
+
+
+
+
+kubernetes之所以要创建两套独立的账号系统原因：
+1.user账号是给人用的，service account是给pod里进程使用的，面向对象不同
+2.user账号是全局性的，service account 则属于某个具体的namespace
+3.通常来说，user账号是与后端的用户数据库同步的，创建一个新用户通常要走一套复杂的业务流程才能实现，service account的创建则需要极轻量级的实现方式，集群管理员可以很容易为某些特定的任务创建一个service account
+4.对于这两种不同的账号，其审计要求通常不同
+5.对于一个复杂的系统来说，多个组件通常拥有各种账号的配置信息，service account 是namespace隔离的，可以针对组件进行一对一的定义。
