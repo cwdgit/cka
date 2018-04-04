@@ -1,0 +1,5 @@
+host模式: 使用--net=host指定
+container模式: 使用--net=container:Name_or_ID
+none模式：使用--net=none指定
+bridge模式：使用--net=bridge指定，为默认设置
+

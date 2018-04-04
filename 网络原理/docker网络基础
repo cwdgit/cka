@@ -1,0 +1,69 @@
+docker本身的技术依赖于近年Linux内核虚拟化技术的发展，所以docker对Linux内核的特性有很强的依赖。
+docker使用到的与Linux网络有关的主要技术
+
+network namespace(网络命名空间)
+veth 设备对
+iptables/netfilter
+网桥
+路由
+
+1.网络的命名空间
+在Linux的网络空间内可以有独立的路由表及独立的iptables/netfilter设置来提供包转发，nat及ip包过滤等功能。
+为了隔离出独立的协议栈，需要纳入命名空间的元素有进程、套接字、网络设备等。进程创建的套接字必须属于某个命名空间。因为网络设备属于公共资源，所以可以通过修改属性实现在命名空间之间移动。当然，是否允许移动和设备特征有关。
+
+网络命名空间的实现
+新生成的私有命名空间只有回环设备lo（而且是停止状态），其他设备默认都不存在，如果我们需要，则要一一手工建立。docker容器中各类网络栈设备都是docker daemon在启动时自动创建的。
+
+所有的网络设备(物理的或虚拟接口、桥等在内核里都叫做net device)都只能属于一个命名空间。当然，通常物理设备只能关联到root这个命名空间。虚拟的网络设备则可以被创建并关联到一个给定的命名空间内，而且可以在这些命名空间之间移动。
+
+
+由于网络命名空间代表的是一个独立的协议栈，所以他们之间是相互隔离的，彼此无法通信，在协议栈内部看不到对方。veth设备对的作用是打通互相看不到的协议栈之间的堡垒。
+
+2.网络命名空间操作
+
+场景一个命名空间
+ip netns add <name>
+
+在命名空间内执行命令：
+ip netns exec <name> <command>
+
+如果想执行多个命令，则可以先进入内部的sh，然后执行：
+ip netns exec <name>  bash
+
+之后就是在新的命名空间内进行操作了，退出到外面的命名空间时，清输入“exit”
+
+veth 设备对
+引入veth设备对是为了在不同的网络命名空间进行通信，利用他可以直接将两个网络命名空间连接起来。
+
+1.veth 设备对的操作命令
+创建veth设备对：
+ip link add veth0 type veth peer name veth1
+
+2.创建后，可以查看veth设备对的信息。使用ip link show命令查看所有网络接口：
+ip link show 
+
+
+3.将veth1 给命名空间netns1
+ip link set veth1 netns netns1
+
+4.在netns1网络命名空间中可以看到veth1设备
+
+5.给veth设备添加ip地址
+ip netns exec netns1 ip addr add 10.1.1.1/24 dev veth1
+ip addr add 10.1.1.2/24 dev veth0
+
+6.启动它们
+ip netns exec netns1 ip link set dev veth1 up
+ip link set dev veth0 up 
+
+
+
+veth 设备对如何查看对端
+首先我们在一个命名空间中查询veth设备对端接口在设备列表中的序列号：
+ip netns exec netns1 ethtool -S veth1
+
+得知另一端的接口设备的序列号是5，我们再到另一个命名空间中查看序列号5代表什么设备。
+ip netns exec netns2 ip link | grep 5
+
+我们找到下标为5的设备，他是veth0，它的另一端自然就是另一个命名空间中的veth1了，因为互为peer。
+

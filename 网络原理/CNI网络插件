@@ -1,0 +1,30 @@
+cni定义的是容器运行环境与网络插件之间简单的接口规范，通过一个Json schema定义CNI插件提供的输入和输出参数。
+
+CNI模型中只涉及两个概念：容器和网络
+1.容器：容器是拥有独立Linux网络命名空间的环境，例如使用docker或rkt创建的容器。关键之处是容器需要独立自己的Linux网络命名空间，这是加入网络的必要条件。
+2.网络：网络表示可以互联的一组实体，这些实体拥有各自独立、唯一的ip地址。这些实体可以是容器，物理机或者其他网络设备。
+
+对容器网络的设置和操作主要都通过插件进行具体实现，cni插件包括两种类型：
+CNI Plugin 包括3个基本接口定义：添加、删除、和版本查询。这些接口的具体实现要求插件提供一个可执行程序，在容器网络添加或删除时进行调用。
+
+添加：
+将容器添加到某个网络。主要过程为在container runtime创建容器时，先创建好容器内的网络命名空间，然后调用cni插件为该netns进行网络配置。
+添加接口的参数如下：
+version：CNI版本号
+container： 容器id
+network namespace path：容器的网络命名空间路径，例如/proc/pid/ns/net
+network configuration: 网络配置json文档，用于描述容器待加入网络
+
+返回的信息如下：
+interfaces list：网卡列表，根据plugin的实现，可能包括sandbox interface名称、主机interface名称、每个interface的地址信息。
+ips assigned to the interface
+dns
+
+删除：容器销毁时将容器容器从某个网络中删除
+删除接口的参数如下
+version：CNI版本号
+containerid: 容器id
+network namespace path
+network configuration
+
+
