@@ -1,0 +1,14 @@
+calico是一个bgp的纯三层的网络方案，calico在每个计算节点利用Linux kernel实现了一个高效的vrouter来负责数据转发。每个vRouter通过bgp1协议把在本节点上运行的容器的路由信息向整个calico网络广播，并自动设置到其他节点的路由转发规则。calico保证所有容器之间的数据流量都是通过ip路由的方式完成互联互通的。calico节点组网可以直接利用数据中心的网络结构(L2或者L3)，不需要额外的nat、隧道或者overlay network，没有额外的封包解包，能够节约cpu运算，提高网络效率。
+
+calico不使用额外的封包解包
+calico在小规模集群中可以直接互联，在大规模集群中可以通过额外的bgp route reflector来完成。
+calico基于iptables还提供了丰富的网络策略，实现了kubernetes的network policy策略，提供容器间网络可达性限制的功能。
+
+calico的主要组件：
+1.felix：calico agent，运行在每台node上，负责为容器设置网络资源(ip地址、路由规则、iptables规则等)，保证跨主机容器网络互通。
+2.etcd： calico 使用的后端存储
+3.bgp client： 负责把felix在各node上设置的路由信息通过bgp协议广播到calico网络
+4.bgp route reflector ：通过一个或者多个bgp route reflector 来完成大规模集群的分级路由分发
+5.calicoctl: calico命令行管理工具
+
+

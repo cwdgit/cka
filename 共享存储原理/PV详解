@@ -1,0 +1,62 @@
+PV作为存储资源，主要包括存储能力、访问方式、存储类型、回收策略、后端存储类型等关键信息设置。
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv1
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistenVolumeReclaimPolicy: Recycle
+  storageClassName: slow
+  nfs:
+   path: /tmp
+   server: 172.17.0.2
+
+
+PV的关键配置参数
+1.存储能力（capacity）
+描述存储设备具备的能力，目前仅支持对存储空间的设置（storage=xx）,未来可能加入iops、吞吐率等指标的设置
+2.访问模式（access modes）
+对PV进行访问模式的设置，用于描述用户应用对存储资源的访问的权限的访问和权限。访问模式如下
+1.ReadWriteOnce (简写为RWO):读写权限，并且只能被单个Node挂载
+2.RradOnlyMany  (简写为ROX):只读权限，允许被多个Node挂载
+3.ReadWriteMany (简写为RWX):读写权限，允许被多个Node挂载
+
+
+
+3）存储类别（Class）
+PV可以设定其存储的类别(Class),通过storageClassName参数指定一个storageClass资源对象的名称，具有特定类别的PV只能与请求了该“类别”的PVC进行绑定。未设定“类别”的PV则只能与不请求任何“类别”的PVC进行绑定。
+
+4）回收策略(Reclaim Policy)
+保留(Retain):保留数据，需要手工处理
+回收空间(Recycle):简单清除文件系统的操作，例如执行 rm -fr /thevolume/*命令
+删除(Delete): 与PV相连的后端存储完成volume的删除操作
+
+2.PV生命周期的各个阶段
+某个PV在生命周期中，可能处于一下四个阶段
+1.available：可用状态，还未与某个PVC绑定
+2.Bound: 已与某个PVC 绑定
+3.Released: 绑定的PVC已经删除，资源已经释放，但没有集群回收
+4.Failed: 自动资源回收失败
+
+PV的挂载参数
+在将PV挂载到一个Node上时，根据后端存储的特点，可能需要设置额外的挂载参数，目前可以通过在PV的定义中，设置一个为“volume.beta.kubernetes.io/mount-options”的annotation来实现。下面的例子对一个类型为gcePersistenDisk的PV设置了挂载参数“discard”
+
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: gce-disk-1
+  annotations:
+    volume.beta.kubernetes.io/mount-options: "discard"
+spec:
+  capacity:
+    storage: "10Gi"
+  accessModes: 
+    - "ReadWriteOnce"
+  gcePersistentDisk:
+    fsType: "ext4"
+    pdName: "gce-disk-1"
+

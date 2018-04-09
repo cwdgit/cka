@@ -1,0 +1,37 @@
+以一个提供服务的NGINX pod为例，为两个客户端pod设置不同的网络访问权限，允许包含label "role=nginxclient" 的pod访问NGINX容器，无此label的其他容器则拒绝访问。
+1.首先为需要设置网络隔离的namespace进行标注，本例中的所有pod都在namespace default中，故对其进行默认的网络隔离。
+
+kubectl annotate ns default "net.beta.kubernetes.io/network-policy={\"ingress\":{\"isolation\":\"DefaultDeny\"}}"
+
+设置完成之后，default内的各pod之间的网络就无法连通了。
+
+2.创建NGINX pod，并添加“app=nginx”
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+
+3.为nginx设置准入访问策略，编辑networkpolicy-allow-nginxclient.yaml
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: allow-nginxclient
+spec:
+  podSelector:
+    matchLabels:
+       app: nginx
+  ingress:
+    - from:
+       - podSelector:
+           matchLabels:
+              role: nginxclient
+       ports:
+       - protocol: TCP
+         port: 80
+  
