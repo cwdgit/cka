@@ -1,0 +1,12 @@
+storageclass 作为对存储资源的抽象定义，对用户设置的pvc申请屏蔽后端存储的细节，一方面减轻用户对于存储资源细节的关注，另一方面也减轻了管理员工管理PV的工作，由系统自动完成PV的创建和绑定，实现了动态的资源供应。使用基于storageclass的动态资源供应模式将逐步成为云平台的标准存储配置模式。
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: standard
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+
+
+
