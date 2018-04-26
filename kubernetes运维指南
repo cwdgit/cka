@@ -1,0 +1,31 @@
+1.node管理
+node的隔离与恢复
+创建配置文件：
+apiVersion: v1
+kind: Node
+metadata:
+  name: k8s-node-1
+  labels:
+    kubernetes.io/hostname: k8s-node-1
+spec:
+  unschedulable: true
+然后通过kubectl replace 命令完成对node状态的更改
+kubectl replace -f unschedule_node.yaml
+对于后续创建的pod，系统将不会再向该node进行调度
+也可以不使用配置文件，直接使用kubectl patch命令完成
+$ kubectl patch node k8s-node-1 -p '{"spec":{"unschedulable":true}}'
+
+attention:需要注意的是，将某个node脱离调度范围时，在其上运行的pod并不会自动停止，需要手动停止在该node上运行的pod
+
+用命令操作：
+kubectl cordon k8s-node-1
+kubectl uncordon k8s-node-1
+
+
+
+
+2.label管理
+3.namespace资源共享
+4.资源配额管理
+5.集群master高可用
+6.集群监控等方面
