@@ -1,2 +1,85 @@
+扩容
 kubectl scale deployment nginx-deployment --replicas 10
+如果集群支持horizontal pod autoscaling 的话，可以设置deployment设置自动扩展：
+kubectl autoscale deployment nginx-deployment --min=10 --max=15 --cpu-percent=80
+更新镜像
+kubectl set image deployment/nginx-deployment nginx=nginx:1.9.1
+回滚
+kubectl rollout undo deployment/nginx-deployment
+检查deployment升级的历史记录
+kubectl rollout history deployment/nginx-deployment
+查看单个revision的详细信息
+kubectl rollout history deployment/nginx-deployment --revision=2
+
+statefulset 作为controller为pod提供的唯一标识。
+stagefulset 是为了解决有状态服务的问题
+1.稳定的持久化存储，即pod重新调度后还是能访问到相同的持久化数据，基于pvc来实现
+2.稳定的网络标志，即pod重新调度后其podname和hostname不变，基于headless service(即没有cluster ip的service)来实现
+3.有序部署，有序扩展，即pod是有顺序的，在部署或者扩展的时候要依据定义的顺序依次进行
+4.有序收缩，有序删除
+
+statefulset由以下几个部分组成
+用于定义网络标志（dns domain）的headless service
+statefulset的适用场景
+
+稳定，唯一的网络标志
+稳定，持久化存储
+有序，优雅的部署和scale
+有序，优雅的删除和终止
+有序，自动的滚动升级
+
+stagefulset 组件事例
+一个nginx的headless service，用于控制网络域
+一个名为web的statefulset，它的spec中指定在有3个运行的nginx容器的pod
+volumeClaimTemplates 使用PersistentVolume Provisioner 提供的pv做为稳定存储
+'''
+apiVersion: v1
+king: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None
+  selector:
+    app: nginx
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  serviceName: "nginx"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx
+        image: gcr.io/google_containers/nginx-slim:0.8
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+ volumeClaimTemlates:
+ - metadata:
+      name: www
+      annotations:
+        volume.beta.kubernetes.io/storage-class: anything
+   spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+'''
+身份与权限控制
+service account
 
